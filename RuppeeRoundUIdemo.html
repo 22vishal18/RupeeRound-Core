@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RupeeRound</title>
+<style>
+:root{--page:#EDEFEA;--screen:#F7F8F6;--card:#FFF;--line:#E6E9E4;--track:#E7ECE8;--text:#1B2420;--muted:#7A857F;--accent:#14705A;--soft:#E3F1EC;--on:#fff;--err:#B3394A;
+font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#0E1310;--screen:#141A16;--card:#1B231E;--line:#27312B;--track:#26302A;--text:#E8EEE9;--muted:#8C9A92;--accent:#3FBF9A;--soft:#1D3029;--on:#08150F;--err:#FF8A99}}
+:root[data-theme="dark"]{--page:#0E1310;--screen:#141A16;--card:#1B231E;--line:#27312B;--track:#26302A;--text:#E8EEE9;--muted:#8C9A92;--accent:#3FBF9A;--soft:#1D3029;--on:#08150F;--err:#FF8A99}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--page);color:var(--text);font-variant-numeric:tabular-nums}
+.stage{min-height:100vh;display:grid;place-items:center;padding:16px}
+.phone{position:relative;width:390px;max-width:100%;height:min(820px,94vh);background:var(--screen);border:9px solid var(--card);border-radius:46px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.12),0 0 0 1px var(--line)}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:96px;height:22px;background:var(--card);border-radius:0 0 14px 14px;z-index:3}
+.screen{height:100%;overflow-y:auto;padding:38px 18px 88px;display:flex;flex-direction:column;gap:14px}
+@media(max-width:480px){.stage{padding:0}.phone{border:0;border-radius:0;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));box-shadow:none}.notch{display:none}.screen{padding-top:20px}}
+.top{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:20px;font-weight:600;letter-spacing:-.02em}h2{font-size:14px;font-weight:600}
+.muted{color:var(--muted)}.small{font-size:12px}
+.status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);background:var(--soft);padding:4px 10px;border-radius:999px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.hero{padding:10px 2px 4px;display:flex;flex-direction:column;gap:8px}
+.big{font-size:44px;font-weight:600;letter-spacing:-.04em;line-height:1}
+.bar{height:8px;background:var(--track);border-radius:999px;overflow:hidden}
+.fill{height:100%;background:var(--accent);border-radius:999px;transition:width .6s ease}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-size:14px;cursor:pointer;border-radius:12px;border:1px solid var(--line);padding:10px 14px;color:var(--text);background:var(--card)}
+button:hover{background:var(--soft)}
+.btn{background:var(--accent);color:var(--on);border-color:var(--accent);font-weight:600}.btn:hover{background:var(--accent);opacity:.9}
+.wide{width:100%}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+textarea{font:inherit;font-size:13px;color:var(--text);background:var(--screen);border:1px solid var(--line);border-radius:12px;padding:10px;resize:none}
+.error{color:var(--err);font-size:13px;min-height:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--screen);border-radius:14px;padding:12px}.num{font-size:18px;font-weight:600}
+.list{list-style:none;padding:0;display:flex;flex-direction:column;gap:12px}
+.list li{display:flex;justify-content:space-between;align-items:center;gap:8px}.gain{color:var(--accent);font-weight:600}
+.chart{display:flex;align-items:flex-end;gap:14px;height:130px;padding-top:8px}
+.col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.col i{display:block;width:100%;border-radius:8px 8px 0 0;min-height:3px;transition:height .6s ease}
+.foot{text-align:center;padding:0 8px}
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.3);display:none;align-items:flex-end;z-index:4}.overlay.on{display:flex}
+.sheet{width:100%;background:var(--card);border-radius:26px 26px 0 0;padding:24px 20px 28px;display:flex;flex-direction:column;gap:10px}
+.ok{color:var(--accent);font-size:22px;font-weight:600}.fund{font-size:20px;font-weight:600}
+.pulse{animation:p 1s ease-in-out infinite}@keyframes p{50%{opacity:.4}}
+@media(prefers-reduced-motion:reduce){.fill,.col i{transition:none}.pulse{animation:none}}
+.view{display:none;flex-direction:column;gap:14px}.view.on{display:flex}
+.nav{position:absolute;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px;z-index:2}
+.nav button{flex:1;border:0;background:transparent;font-size:11px;color:var(--muted);padding:10px 0;border-radius:12px}
+.nav button.on{color:var(--accent);font-weight:600;background:var(--soft)}
+.center{text-align:center}.pig{display:grid;place-items:center;padding:6px 0}.pig svg{width:100%;max-width:300px}
+#pig-fill{transition:y .6s ease,height .6s ease}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:center}.kv:last-child{border:0}.kv span:first-child{color:var(--muted)}
+.av{width:72px;height:72px;border-radius:50%;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-size:30px;font-weight:600;margin:0 auto}
+.seg{display:flex;gap:6px}.seg button{flex:1}.seg button.on{background:var(--accent);color:var(--on);border-color:var(--accent)}
+.sw{width:44px;height:26px;border-radius:999px;background:var(--track);border:0;position:relative;padding:0;flex:none}.sw:hover{background:var(--track)}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--card);transition:left .2s}
+.sw[aria-checked=true],.sw[aria-checked=true]:hover{background:var(--accent)}.sw[aria-checked=true]::after{left:21px}
+.sbar{position:absolute;top:0;left:0;right:0;height:38px;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font-size:13px;font-weight:600;z-index:3;background:var(--screen)}
+.sicons{display:flex;gap:6px;align-items:center}
+.hind{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:4px;background:var(--text);opacity:.8;z-index:5}
+.nav{padding:6px 6px 20px}.nav button{display:flex;flex-direction:column;align-items:center;gap:3px}.nav svg{width:20px;height:20px}
+svg.i{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.brand{display:flex;align-items:center;gap:10px}.brand h1{line-height:1.1}
+.logo{width:36px;height:36px;border-radius:12px;background:var(--accent);color:var(--on);display:grid;place-items:center;font-weight:700;font-size:19px}
+.amtrow{display:flex;align-items:center;justify-content:space-between;gap:12px}.mini{width:78px;height:auto;flex:none}
+.mi{width:38px;height:38px;border-radius:12px;background:var(--soft);color:var(--accent);display:grid;place-items:center;flex:none}.mi svg{width:19px;height:19px}
+.list li{gap:12px}.gain{display:flex;align-items:center;gap:5px}.gain svg{width:15px;height:12px}
+button:active{transform:scale(.97)}
+.toast{position:absolute;top:44px;left:50%;transform:translate(-50%,-14px);background:var(--text);color:var(--screen);font-size:13px;padding:9px 14px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:6;white-space:nowrap}.toast.on{opacity:1;transform:translate(-50%,0)}
+@keyframes bump{30%{transform:scale(1.18) rotate(-6deg)}60%{transform:scale(.96)}}.bump{animation:bump .5s}
+@media(max-width:480px){.sbar,.hind{display:none}}
+@media(prefers-reduced-motion:reduce){.bump{animation:none}.toast{transition:none}}
+.toast{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:10px 12px;width:calc(100% - 28px);max-width:350px;white-space:normal;display:flex;align-items:center;gap:10px;text-align:left;top:44px;box-shadow:0 10px 28px rgba(0,0,0,.2)}
+.toast .ni{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--on);display:grid;place-items:center;flex:none}.toast .ni svg{width:18px;height:18px}
+.toast b{display:block;font-size:13px;font-weight:600}.toast p{font-size:12px;color:var(--muted)}.toast .tm{margin-left:auto;align-self:flex-start;font-size:11px;color:var(--muted)}
+.toast .ni{color:#fff}
+.gear{width:38px;height:38px;padding:0;display:grid;place-items:center}.gear svg{width:20px;height:20px}
+.amt{font-weight:600;white-space:nowrap}.amt.saved,.amt.invested{color:var(--accent)}
+.brand-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.brand-row:last-child{border:0}
+.pw{position:relative;display:block}.pig .pw{width:100%;max-width:300px}.amtrow .pw{flex:none}
+.coin{position:absolute;left:50%;top:0;margin-left:-9px;width:18px;height:18px;border-radius:50%;background:#F2B531;color:#5A3D00;font:700 11px/18px sans-serif;text-align:center;opacity:0;pointer-events:none;--s:-22px;--d:12px}.coin::before{content:"₹"}
+.pw.big .coin{width:30px;height:30px;margin-left:-15px;font-size:16px;line-height:30px;--s:-44px;--d:44px}
+.coin.go{animation:cd .9s ease-in}
+@keyframes cd{0%{opacity:1;transform:translateY(var(--s))}80%{opacity:1;transform:translateY(var(--d))}100%{opacity:0;transform:translateY(var(--d)) scale(.5)}}
+.cf{position:absolute;top:0;width:8px;height:12px;z-index:7;pointer-events:none;animation:cf 1.7s ease-out forwards}
+@keyframes cf{to{transform:translate(var(--x),560px) rotate(var(--r));opacity:0}}
+.sk{height:14px;border-radius:8px;background:linear-gradient(90deg,var(--track) 25%,var(--soft) 50%,var(--track) 75%);background-size:200% 100%;animation:sh 1.2s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+.onb{position:absolute;inset:0;background:var(--screen);z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px 28px 36px;text-align:center}.onb.off{display:none}
+.ob-art{width:160px;height:160px;border-radius:48px;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-size:64px;font-weight:600;margin-bottom:10px}.ob-art svg{width:88%;height:auto}.ob-art svg.i{width:64px;height:64px}
+.ob-t{font-size:30px;letter-spacing:-.03em}.dots{display:flex;gap:6px;margin:8px 0 14px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--track)}.dots i.on{background:var(--accent);width:20px;border-radius:4px}
+.skip{position:absolute;top:48px;right:20px;border:0;background:transparent;color:var(--muted)}
+@media(prefers-reduced-motion:reduce){.coin.go{animation:none}.cf{display:none}.sk{animation:none}}
+.lock{position:absolute;inset:0;background:var(--screen);z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 28px}.lock.off{display:none}
+.pdots{display:flex;gap:14px;margin:8px 0 12px}.pdots i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted)}.pdots i.on{background:var(--text);border-color:var(--text)}
+.pdots.shake{animation:sk2 .35s}@keyframes sk2{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.keys{display:grid;grid-template-columns:repeat(3,72px);gap:12px}.keys button{height:56px;border-radius:50%;font-size:20px;padding:0}.keys span{display:block}
+.skip2{border:0;background:transparent;color:var(--accent);margin-top:6px}
+.bdot{position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:#E86F5C;display:none}#bell{position:relative}.hdr{display:flex;align-items:center;gap:8px}
+@media(prefers-reduced-motion:reduce){.pdots.shake{animation:none}}
+</style>
+</head>
+<body>
+<div class="stage"><div class="phone"><div class="notch"></div>
+<div class="sbar"><span id="clock">9:41</span><span class="sicons"><svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true"><rect x="0" y="7" width="3" height="4" rx=".8"/><rect x="4.5" y="5" width="3" height="6" rx=".8"/><rect x="9" y="2.5" width="3" height="8.5" rx=".8"/><rect x="13.5" y="0" width="3" height="11" rx=".8"/></svg><svg width="25" height="12" viewBox="0 0 25 12" aria-hidden="true"><rect x=".5" y=".5" width="21" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/><rect x="23" y="4" width="1.5" height="4" rx=".7" fill="currentColor" opacity=".5"/></svg></span></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="lock" id="lock"><div class="logo">₹</div><h2>Enter PIN</h2><p class="muted small" id="lk-m">Demo PIN: 1234</p><div class="pdots" id="pdots"><i></i><i></i><i></i><i></i></div><div class="keys" id="keys"></div><button class="skip2" id="fp">Use fingerprint</button></div><div class="hind"></div>
+<div class="onb" id="onb"><button class="skip" id="skip">Skip</button><div class="ob-art" id="ob-art"></div><h2 class="ob-t" id="ob-t"></h2><p class="muted" id="ob-p" style="max-width:260px"></p><div class="dots" id="dots"></div><button class="btn wide" id="ob-next">Next</button></div>
+<div class="screen"><div class="view on" id="v-home">
+  <header class="top"><div class="brand"><span class="logo">₹</span><div><p class="muted small">Hi, Parth</p><h1>RupeeRound</h1></div></div><div class="hdr"><p class="status"><span class="dot"></span>AutoPay active</p><button class="gear" id="bell" data-go="notes" aria-label="Notifications"><i class="bdot" id="bdot"></i></button></div></header>
+  <section class="hero">
+    <p class="muted">Piggy bank</p><div class="amtrow"><p class="big" id="piggy">₹0</p><div class="pw"><svg class="mini" id="mini" viewBox="0 0 240 190" role="img" aria-label="Small piggy bank filling up"></svg><i class="coin"></i></div></div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="pb"><div class="fill" id="pf" style="width:0"></div></div>
+    <p class="muted small" id="togo"></p>
+  </section>
+  <section class="card">
+    <button class="btn wide" id="demo">Run full demo</button>
+    <p class="muted small" id="step" aria-live="polite"></p>
+  </section>
+  <section class="card">
+    <h2>Simulate purchase</h2>
+    <div class="row">
+      <button data-m="DMart" data-a="174">₹174 DMart</button>
+      <button data-m="Pizza" data-a="224">₹224 Pizza</button>
+      <button data-m="Coffee" data-a="42">₹42 Coffee</button>
+    </div>
+    <textarea id="sms" rows="2" placeholder="Paste a bank SMS, e.g. Rs.363 spent at Blinkit on 24-Oct"></textarea>
+    <div class="row"><button id="addsms">Add from SMS</button><button class="btn" id="amz">Shop on Amazon (+₹15)</button></div>
+    <p class="error" id="err" role="alert"></p>
+  </section>
+  <section class="card" id="wk"><h2>This week</h2><p id="wk-t" style="font-size:15px;line-height:1.45"></p><div class="row" style="align-items:center"><span class="mi" id="wk-i" style="width:30px;height:30px"></span><p class="muted small" id="wk-s"></p></div></section>
+  <section class="card" style="flex-direction:row;align-items:center;justify-content:space-between"><div><h2>Round-up booster</h2><p class="muted small">Double my round-ups this week</p></div><button class="sw" id="boost" role="switch" aria-checked="false" aria-label="Round-up booster"></button></section>
+  <section class="card" data-go="brands" role="link" tabindex="0" style="cursor:pointer;flex-direction:row;align-items:center;justify-content:space-between"><div><h2>Partner brands</h2><p class="muted small">Shop with Amazon, Swiggy or Blinkit and earn rewards</p></div><span class="muted">›</span></section>
+  <section class="card"><h2>Activity</h2><ul class="list" id="act"></ul></section>
+  <section class="card"><h2>Dashboard</h2>
+    <div class="grid" id="stats"></div>
+    <div class="chart" id="chart"></div>
+  </section>
+  <p class="muted small foot">Test mode, nothing real moves. To stop AutoPay, cancel the mandate in Google Pay or your UPI app.</p>
+</div>
+<div class="view" id="v-piggy">
+  <header class="top"><h1>Piggy bank</h1></header>
+  <div class="pig"><div class="pw big"><i class="coin"></i><svg viewBox="0 0 240 190" role="img" aria-label="Piggy bank filling with your spare change">
+    <defs><clipPath id="body"><ellipse cx="120" cy="100" rx="82" ry="62"/></clipPath></defs>
+    <g fill="var(--soft)" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round">
+      <rect x="72" y="142" width="20" height="34" rx="7"/><rect x="146" y="142" width="20" height="34" rx="7"/>
+      <path d="M150 50 L170 20 L182 58 Z"/><ellipse cx="120" cy="100" rx="82" ry="62"/>
+      <path d="M40 90 q-20 -4 -16 -24" fill="none" stroke-linecap="round"/>
+    </g>
+    <rect id="pig-fill" x="30" y="162" width="180" height="0" fill="var(--accent)" opacity=".8" clip-path="url(#body)"/>
+    <ellipse cx="204" cy="108" rx="17" ry="14" fill="var(--soft)" stroke="var(--accent)" stroke-width="3"/>
+    <circle cx="199" cy="108" r="2.5" fill="var(--accent)"/><circle cx="209" cy="108" r="2.5" fill="var(--accent)"/>
+    <circle cx="168" cy="86" r="4.5" fill="var(--text)"/><rect x="98" y="42" width="44" height="6" rx="3" fill="var(--accent)"/>
+  </svg></div></div>
+  <p class="big center" id="pg-amt">₹0</p>
+  <p class="muted center small" id="pg-sub"></p>
+  <div class="grid" id="pg-stats"></div><p class="muted small center" id="capline"></p><button class="wide" id="shr2">Share my progress</button>
+  <section class="card"><h2>Investment history</h2><ul class="list" id="invl"></ul><p class="muted small" data-go="fund" role="link" tabindex="0" style="cursor:pointer">What is an index fund? ›</p></section>
+</div>
+<div class="view" id="v-pay">
+  <header class="top"><h1>UPI AutoPay</h1><p class="status"><span class="dot"></span>Active</p></header>
+  <section class="card">
+    <div class="kv"><span>Mandate ID</span><span>MND48213907</span></div>
+    <div class="kv"><span>Linked UPI ID</span><span>parth@upi</span></div>
+    <div class="kv"><span>Pulls money when</span><span>Piggy bank hits ₹100</span></div>
+    <div class="kv"><span>Next investment in</span><span id="ap-togo"></span></div>
+    <div class="kv"><span>Moved so far</span><span id="ap-swept"></span></div>
+    <div class="kv"><span>Mode</span><span>Test, no real money</span></div>
+  </section>
+  <p class="muted small">You approved this mandate once when you signed up. To pause or cancel it, open Google Pay or your UPI app and remove the mandate.</p>
+</div>
+<div class="view" id="v-profile">
+  <header class="top"><h1>Profile</h1><button class="gear" data-go="settings" aria-label="Settings"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button></header>
+  <div class="av">P</div><p class="center" style="font-size:18px;font-weight:600">Parth</p><p class="muted center small">Member since October 2026</p>
+  <div class="grid" id="pf-stats"></div>
+  <section class="card"><h2>Badges</h2><div class="grid" id="badges"></div></section>
+  <section class="card">
+    <div class="kv"><span>Linked bank</span><span>Test Bank ••4821</span></div>
+    <div class="kv"><span>UPI ID</span><span>parth@upi</span></div>
+    <div class="kv" data-go="fund" role="link" tabindex="0" style="cursor:pointer"><span>Invests in</span><span>Nifty 50 Index Fund ›</span></div>
+  </section>
+</div>
+<div class="view" id="v-settings">
+  <header class="top"><h1>Settings</h1><button data-go="profile">Back</button></header>
+  <section class="card">
+    <h2>Appearance</h2>
+    <div class="seg" id="theme"><button data-t="auto" class="on">Auto</button><button data-t="light">Light</button><button data-t="dark">Dark</button></div>
+    <div class="kv"><span>Notifications</span><button class="sw" id="notif" role="switch" aria-checked="true" aria-label="Notifications"></button></div>
+    <div class="kv"><span>Round up to the next</span></div><div class="seg" id="stepseg"><button data-s="10">₹10</button><button data-s="50" class="on">₹50</button><button data-s="100">₹100</button></div>
+    <div class="kv"><span>Pause round-ups</span><button class="sw" id="pause" role="switch" aria-checked="false" aria-label="Pause round-ups"></button></div>
+    <div class="kv"><span>Never save more than, per month</span></div><div class="seg" id="capseg"><button data-c="200">₹200</button><button data-c="500" class="on">₹500</button><button data-c="1000">₹1,000</button></div>
+    <div class="kv"><span>App lock (PIN)</span><button class="sw" id="locksw" role="switch" aria-checked="true" aria-label="App lock"></button></div>
+    <button class="wide" id="locknow">Lock now</button><button class="wide" id="nextday">Demo: advance one day</button>
+    <div class="kv"><span>Invest at</span><span>₹100</span></div>
+  </section>
+  <button class="wide" id="reset">Reset demo data</button>
+  <p class="muted small center">RupeeRound runs in test mode.</p>
+</div>
+<div class="view" id="v-notes">
+  <header class="top"><h1>Notifications</h1><button data-go="home">Back</button></header>
+  <section class="card"><ul class="list" id="nlist"></ul></section>
+</div>
+<div class="view" id="v-history">
+  <header class="top"><h1>History</h1></header>
+  <div class="seg" id="hf"><button data-f="all" class="on">All</button><button data-f="spent">Spent</button><button data-f="saved">Saved</button><button data-f="invested">Invested</button></div>
+  <section class="card"><ul class="list" id="hist"></ul></section>
+  <button class="wide" id="dl">Download statement (CSV)</button>
+</div>
+<div class="view" id="v-brands">
+  <header class="top"><h1>Partner brands</h1><button data-go="home">Back</button></header>
+  <p class="muted small">Shop with a partner and the brand’s commission is invested for you, instead of a coupon you’ll forget.</p>
+  <section class="card">
+    <div class="brand-row"><span class="mi" data-ic="bag"></span><div style="flex:1"><p>Amazon</p><p class="muted small">1.5% back, about ₹15 per order</p></div><button data-rw="Amazon:15">Shop</button></div>
+    <div class="brand-row"><span class="mi" data-ic="pizza"></span><div style="flex:1"><p>Swiggy</p><p class="muted small">2% back, about ₹10 per order</p></div><button data-rw="Swiggy:10">Order</button></div>
+    <div class="brand-row"><span class="mi" data-ic="cart"></span><div style="flex:1"><p>Blinkit</p><p class="muted small">1% back, about ₹8 per order</p></div><button data-rw="Blinkit:8">Order</button></div>
+  </section>
+  <p class="muted small">Demo rewards. Real rates depend on each brand’s partnership.</p>
+</div>
+<div class="view" id="v-fund">
+  <header class="top"><h1>Nifty 50 Index Fund</h1></header>
+  <section class="card"><h2>What is an index fund?</h2><p class="muted" style="font-size:14px;line-height:1.5">Instead of betting on one company, an index fund holds small pieces of many. The Nifty 50 covers 50 of India’s largest listed companies, so your money is spread across all of them.</p><p class="muted" style="font-size:14px;line-height:1.5">You don’t pick stocks or time the market. When the index rises, your units rise with it, and when it falls, they fall too.</p></section>
+  <section class="card"><h2>Why RupeeRound uses it</h2><p class="muted" style="font-size:14px;line-height:1.5">In India you can’t buy a small slice of a single stock, but you can buy index fund units in small amounts. That is why your ₹100 can go straight in.</p></section>
+  <section class="card"><h2>Your holding</h2><div class="kv"><span>Units</span><span id="fh-u">0</span></div><div class="kv"><span>Value at ₹252.4 per unit</span><span id="fh-v">₹0</span></div><div class="kv"><span>Invested</span><span id="fh-i">₹0</span></div></section>
+  <p class="muted small">Test mode. For illustration only, not investment advice. Market-linked investments can lose value.</p>
+  <button class="wide" data-go="profile">Back</button>
+</div>
+</div>
+<nav class="nav" aria-label="Main">
+  <button data-v="home" class="on"><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Home</button><button data-v="piggy"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 8.5h7M8.5 11.5h7M10.5 8.5c3.5 0 3.5 4.5 0 4.5l3.5 3.5"/></svg>Piggy bank</button><button data-v="pay"><svg class="i" viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg>AutoPay</button><button data-v="profile"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Profile</button><button data-v="history"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>History</button>
+</nav>
+<div class="overlay" id="ov"><div class="sheet" id="sheet"></div></div>
+</div></div>
+<script>
+const $=id=>document.getElementById(id),TH=100,NAV=252.4,sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const inr=n=>'₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2}),r2=n=>Math.round(n*100)/100;
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const AMOUNT=/(?:rs\.?|inr|₹)\s*([\d,]+(?:\.\d+)?)/i,MERCHANT=/\b(?:at|to)\s+([A-Za-z][A-Za-z0-9 &'.-]*?)(?=\s+(?:on|via|ref|upi|using)\b|[.,;]|$)/i;
+function parseSms(t){const a=AMOUNT.exec(t);if(!a)return null;const amount=parseFloat(a[1].replace(/,/g,''));if(!(amount>0))return null;const m=MERCHANT.exec(t);return{amount,merchant:m?m[1].trim():null}}
+function roundUp(a,step=50){const rounded=Math.ceil(a/step)*step;return{rounded,spare:r2(rounded-a)}}
+const fresh=()=>({tx:[],inv:[],notes:[],unread:0,days:[],day:0,badges:[],piggy:0,spent:0,spare:0,rewards:0,invested:0});
+let s=fresh(),busy=false,sweeping=null,id=0;
+
+function render(){renderExtra();
+  const pct=Math.min(100,s.piggy/TH*100);
+  $('piggy').textContent=inr(s.piggy);$('pf').style.width=pct+'%';$('pb').setAttribute('aria-valuenow',Math.round(pct));
+  $('togo').textContent=inr(Math.max(0,TH-s.piggy))+' to go. Invests automatically at '+inr(TH)+'.';
+  $('act').innerHTML=s.tx.length?s.tx.slice(0,8).map(t=>`<li><span class="mi">${icon(t)}</span><div style="flex:1"><p>${esc(t.merchant)}</p><p class="muted small">${t.type==='reward'?'Brand reward':inr(t.amount)+' → '+inr(t.rounded)}</p></div><p class="gain"><svg class="i" viewBox="0 0 24 18"><ellipse cx="11" cy="10" rx="8" ry="6"/><path d="M16 5l3-3v6M7 16v2M14 16v2"/></svg>+${inr(t.type==='reward'?t.amount:t.spare)}</p></li>`).join(''):'<li class="muted">No activity yet. Simulate a purchase to start.</li>';
+  $('stats').innerHTML=[['Total spent',s.spent],['Spare change',s.spare],['Brand rewards',s.rewards],['Invested',s.invested]].map(([l,v])=>`<div class="stat"><p class="muted small">${l}</p><p class="num">${inr(v)}</p></div>`).join('');
+  const d=[['Spent',s.spent,'var(--track)'],['Set aside',s.spare+s.rewards,'var(--soft)'],['Invested',s.invested,'var(--accent)']],mx=Math.max(1,...d.map(x=>x[1]));
+  $('chart').innerHTML=d.map(([n,v,c])=>`<div class="col"><span class="small muted">${inr(v)}</span><i style="height:${Math.max(3,v/mx*88)}px;background:${c};${n==='Set aside'?'border:1px solid var(--accent);':''}"></i><span class="small muted">${n}</span></div>`).join('');
+}
+const setErr=m=>$('err').textContent=m||'';
+function addTx(t){t.id=++id;t.ts=Date.now();if((t.type==='reward'||t.spare>0)&&!s.days.includes(s.day))s.days.push(s.day);s.tx.unshift(t)}
+function buy(amount,merchant){
+  let {spare}=cfg.paused?{spare:0}:roundUp(amount,cfg.step);if(cfg.boost)spare=r2(spare*2);const room=Math.max(0,r2(cfg.cap-s.spare));if(spare>room){spare=room;toast('Monthly cap reached, no more round-ups',1)}const rounded=r2(amount+spare);
+  addTx({type:'purchase',merchant:merchant||'Unknown shop',amount,rounded,spare});
+  if(spare>0)toast('+'+inr(spare)+' saved from '+(merchant||'your purchase'));s.spent=r2(s.spent+amount);s.spare=r2(s.spare+spare);s.piggy=r2(s.piggy+spare);
+  render();return autoSweep();
+}
+function reward(b='Amazon',a=15){addTx({type:'reward',merchant:b,amount:a});toast('+'+inr(a)+' reward from '+b);s.rewards=r2(s.rewards+a);s.piggy=r2(s.piggy+a);render();return autoSweep()}
+// AutoPay mandate is set up once, so the sweep needs no approval.
+function autoSweep(){
+  if(s.piggy<TH||sweeping)return sweeping;
+  sweeping=(async()=>{
+    const amount=Math.floor(s.piggy/TH)*TH;
+    $('sheet').innerHTML=`<h2>Investing ${inr(amount)}</h2><p class="muted">Your piggy bank is full. AutoPay is moving it now.</p><div class="sk" style="width:70%"></div><div class="sk" style="width:92%"></div><div class="sk" style="width:55%"></div>`;
+    $('ov').classList.add('on');
+    await sleep(1500);
+    const units=Math.round(amount/NAV*1e4)/1e4,mandate='MND'+Date.now().toString().slice(-8);
+    s.piggy=r2(s.piggy-amount);s.inv.unshift({id:++id,ts:Date.now(),amount,units,fund:'Nifty 50 Index Fund'});s.invested=r2(s.invested+amount);render();confetti();
+    $('sheet').innerHTML=`<h2 class="ok">${inr(amount)} invested</h2><p class="fund">Nifty 50 Index Fund</p><p class="muted">${units} units at ₹${NAV} each</p><p class="muted small">Paid automatically via UPI AutoPay (test mode). Mandate ${mandate}.</p><button class="wide" id="shr">Share</button><button class="btn wide" id="done">Done</button>`;
+    $('done').onclick=closeSheet;$('shr').onclick=openShare;
+    sweeping=null;
+  })();
+  return sweeping;
+}
+const closeSheet=()=>$('ov').classList.remove('on');
+const lock=v=>{busy=v;document.querySelectorAll('button[data-m],#addsms,#amz,#demo').forEach(b=>b.disabled=v);$('demo').textContent=v?'Demo running…':'Run full demo'};
+
+document.querySelectorAll('button[data-m]').forEach(b=>b.onclick=()=>{setErr();buy(+b.dataset.a,b.dataset.m)});
+$('amz').onclick=()=>{setErr();reward()};
+$('addsms').onclick=()=>{
+  const t=$('sms').value.trim();if(!t)return;
+  const p=parseSms(t);
+  if(!p){setErr('Couldn’t find an amount in that SMS. Try: Rs.174 spent at DMart');return}
+  setErr();buy(p.amount,p.merchant);$('sms').value='';
+};
+$('demo').onclick=async()=>{
+  lock(true);setErr();closeSheet();cfg.step=50;cfg.paused=false;cfg.boost=false;cfg.cap=500;mark();s=fresh();render();
+  const say=t=>$('step').textContent=t;
+  say('Step 1 of 5: groceries at DMart, ₹174 rounds up to ₹200');buy(174,'DMart');await sleep(1600);
+  say('Step 2 of 5: pizza and coffee add more spare change');buy(224,'Pizza');await sleep(900);buy(42,'Coffee');await sleep(1600);
+  say('Step 3 of 5: Amazon pays a commission, we invest it as a reward');reward();await sleep(1600);
+  say('Step 4 of 5: one more order fills the piggy bank to ₹100');const p=parseSms('Rs.363 spent at Blinkit on 24-Oct');buy(p.amount,p.merchant);
+  say('Step 5 of 5: AutoPay moves ₹100 into a Nifty 50 Index Fund');await sweeping;await sleep(3200);closeSheet();
+  say('Demo complete. You spend as usual, we invest the spare change.');lock(false);
+};
+const statHtml=([l,v])=>`<div class="stat"><p class="muted small">${l}</p><p class="num">${inr(v)}</p></div>`;
+function renderExtra(){
+  const pct=Math.min(100,s.piggy/TH*100),h=124*pct/100,f=$('pig-fill');
+  f.setAttribute('y',162-h);f.setAttribute('height',h);const m=$('mini-fill');if(m){m.setAttribute('y',162-h);m.setAttribute('height',h)}
+  $('pg-amt').textContent=inr(s.piggy);
+  $('pg-sub').textContent=pct>=100?'Full. Investing now.':inr(Math.max(0,TH-s.piggy))+' to go until the next investment';
+  $('pg-stats').innerHTML=[['Collected now',s.piggy],['Total invested',s.invested],['Spare change',s.spare],['Brand rewards',s.rewards]].map(statHtml).join('');
+  $('ap-togo').textContent=inr(Math.max(0,TH-s.piggy));$('ap-swept').textContent=inr(s.invested);renderMore();
+  $('pf-stats').innerHTML=[['Total spent',s.spent],['Invested',s.invested],['Spare change',s.spare],['Brand rewards',s.rewards]].map(statHtml).join('');
+}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelector('.screen').scrollTop=0;
+});
+document.querySelectorAll('#theme button').forEach(b=>b.onclick=()=>{
+  const t=b.dataset.t;if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.dataset.theme=t;
+  document.querySelectorAll('#theme button').forEach(x=>x.classList.toggle('on',x===b));
+});
+$('notif').onclick=e=>e.currentTarget.setAttribute('aria-checked',e.currentTarget.getAttribute('aria-checked')!=='true');
+$('reset').onclick=()=>{if(busy)return;s=fresh();closeSheet();$('step').textContent='';render()};
+const pigInner=(p,sw)=>`<defs><clipPath id="${p}body"><ellipse cx="120" cy="100" rx="82" ry="62"/></clipPath></defs><g fill="var(--soft)" stroke="var(--accent)" stroke-width="${sw}" stroke-linejoin="round"><rect x="72" y="142" width="20" height="34" rx="7"/><rect x="146" y="142" width="20" height="34" rx="7"/><path d="M150 50 L170 20 L182 58 Z"/><ellipse cx="120" cy="100" rx="82" ry="62"/><path d="M40 90 q-20 -4 -16 -24" fill="none" stroke-linecap="round"/></g><rect id="${p}-fill" x="30" y="162" width="180" height="0" fill="var(--accent)" opacity=".8" clip-path="url(#${p}body)"/><ellipse cx="204" cy="108" rx="17" ry="14" fill="var(--soft)" stroke="var(--accent)" stroke-width="${sw}"/><circle cx="168" cy="86" r="6" fill="var(--text)"/><rect x="98" y="42" width="44" height="7" rx="3.5" fill="var(--accent)"/>`;
+$('mini').innerHTML=pigInner('mini',7);
+const ICONS={cart:'<path d="M3 4h2l2.4 11h9.2L19 8H6.2"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',pizza:'<path d="M4 6c5-3 11-3 16 0L12 21z"/><circle cx="11" cy="9" r="1"/><circle cx="14" cy="12" r="1"/>',cup:'<path d="M5 9h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2M8 4v2M12 4v2"/>',bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1"/>'};
+function icon(t){const m=(t.merchant||'').toLowerCase();const k=t.type==='reward'||/amazon/.test(m)?'bag':/mart|blinkit|grocer|zepto|bigbasket/.test(m)?'cart':/pizza|swiggy|zomato|food|burger/.test(m)?'pizza':/coffee|cafe|tea/.test(m)?'cup':'tag';return`<svg class="i" viewBox="0 0 24 24">${ICONS[k]}</svg>`}
+let tt;function toast(m,q){s.notes.unshift({m,ts:Date.now()});s.unread++;if(s.notes.length>30)s.notes.pop();const e=$('toast'),p=$('mini');e.innerHTML='<span class="ni"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></span><div><b>RupeeRound</b><p>'+esc(m)+'</p></div><span class="tm">now</span>';e.classList.add('on');if(!q){p.classList.remove('bump');void p.getBoundingClientRect();p.classList.add('bump');document.querySelectorAll('.coin').forEach(c=>{c.classList.remove('go');void c.offsetWidth;c.classList.add('go')})}clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2200)}
+const tick=()=>{$('clock').textContent=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit',hour12:false})};tick();setInterval(tick,30000);
+const cfg={step:50,paused:false,boost:false,cap:500,lock:true};let hf='all';
+const fmt=ts=>new Date(ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+ICONS.up='<path d="M4 17l6-6 4 4 6-8"/>';ICONS.coin='<circle cx="12" cy="12" r="8"/><path d="M9 9h6M9 12h6M11 9c3 0 3 4 0 4l3 3"/>';
+const ic=k=>`<svg class="i" viewBox="0 0 24 24">${ICONS[k]}</svg>`;
+document.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=ic(e.dataset.ic));
+function go(v){if(v==='notes')s.unread=0;document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('on',x.dataset.v===v));document.querySelector('.screen').scrollTop=0;renderMore()}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go);const r=e.target.closest('[data-rw]');if(r){const[b,a]=r.dataset.rw.split(':');reward(b,+a)}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)}});
+document.querySelectorAll('#hf button').forEach(b=>b.onclick=()=>{hf=b.dataset.f;document.querySelectorAll('#hf button').forEach(x=>x.classList.toggle('on',x===b));renderMore()});
+function mark(){document.querySelectorAll('#capseg button').forEach(x=>x.classList.toggle('on',+x.dataset.c===cfg.cap));$('boost').setAttribute('aria-checked',String(cfg.boost));$('locksw').setAttribute('aria-checked',String(cfg.lock));document.querySelectorAll('#stepseg button').forEach(x=>x.classList.toggle('on',+x.dataset.s===cfg.step));$('pause').setAttribute('aria-checked',String(cfg.paused))}
+document.querySelectorAll('#stepseg button').forEach(b=>b.onclick=()=>{cfg.step=+b.dataset.s;mark()});
+$('pause').onclick=()=>{cfg.paused=!cfg.paused;mark()};
+function renderMore(){
+  const ev=[];
+  s.tx.forEach(t=>{if(t.type==='purchase'){ev.push({k:'spent',id:t.id,t:t.merchant,sub:'Paid '+inr(t.amount),amt:'−'+inr(t.amount),ic:icon(t)});if(t.spare>0)ev.push({k:'saved',id:t.id+.5,t:'Round-up saved',sub:inr(t.amount)+' → '+inr(t.rounded),amt:'+'+inr(t.spare),ic:ic('coin')})}else ev.push({k:'saved',id:t.id,t:t.merchant+' reward',sub:'Brand reward',amt:'+'+inr(t.amount),ic:icon(t)})});
+  s.inv.forEach(v=>ev.push({k:'invested',id:v.id,t:v.fund,sub:fmt(v.ts)+' · '+v.units+' units',amt:inr(v.amount),ic:ic('up')}));
+  ev.sort((a,b)=>b.id-a.id);
+  const rows=ev.filter(e=>hf==='all'||e.k===hf);
+  $('hist').innerHTML=rows.length?rows.map(e=>`<li><span class="mi">${e.ic}</span><div style="flex:1"><p>${esc(e.t)}</p><p class="muted small">${esc(e.sub)}</p></div><p class="amt ${e.k}">${e.amt}</p></li>`).join(''):'<li class="muted">Nothing here yet.</li>';
+  $('invl').innerHTML=s.inv.length?s.inv.map(v=>`<li><span class="mi">${ic('up')}</span><div style="flex:1"><p>${inr(v.amount)} in ${esc(v.fund)}</p><p class="muted small">${fmt(v.ts)} · ${v.units} units</p></div></li>`).join(''):'<li class="muted">No investments yet. They appear when your piggy bank reaches ₹100.</li>';
+  const u=Math.round(s.inv.reduce((a,v)=>a+v.units,0)*1e4)/1e4;
+  $('fh-u').textContent=u;$('fh-v').textContent=inr(u*NAV);$('fh-i').textContent=inr(s.invested);renderMore2();
+}
+function confetti(){const ph=document.querySelector('.phone');for(let i=0;i<30;i++){const c=document.createElement('i');c.className='cf';c.style.cssText=`left:${8+Math.random()*84}%;background:${['#14705A','#F2B531','#E86F5C','#6C8EF5','#9CCBBC'][i%5]};--x:${(Math.random()-.5)*140}px;--r:${Math.random()*720}deg;animation-delay:${Math.random()*.3}s;border-radius:${i%2?'50%':'2px'}`;ph.appendChild(c);setTimeout(()=>c.remove(),2200)}}
+const OB=[{t:'Spend.',p:'Pay for coffee, groceries and food like you always do.',a:ic('cart')},{t:'Round up.',p:'₹174 becomes ₹200. The ₹26 difference goes into your piggy bank.',a:'₹'},{t:'Grow.',p:'At ₹100, AutoPay invests it in an index fund. No decisions needed.',a:`<svg viewBox="0 0 240 190">${pigInner('ob',5)}</svg>`}];
+let ob=0;
+function showOb(){const o=OB[ob];$('ob-t').textContent=o.t;$('ob-p').textContent=o.p;$('ob-art').innerHTML=o.a;const f=$('ob-fill');if(f){f.setAttribute('y',102);f.setAttribute('height',60)}$('dots').innerHTML=OB.map((_,i)=>`<i class="${i===ob?'on':''}"></i>`).join('');$('ob-next').textContent=ob===OB.length-1?'Link UPI AutoPay':'Next'}
+$('ob-next').onclick=async()=>{if(ob<OB.length-1){ob++;showOb();return}const b=$('ob-next');b.disabled=true;b.textContent='Linking AutoPay…';await sleep(1200);b.textContent='AutoPay linked';await sleep(600);$('onb').classList.add('off')};
+$('skip').onclick=()=>$('onb').classList.add('off');
+showOb();
+ICONS.flame='<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/>';ICONS.award='<circle cx="12" cy="9" r="5"/><path d="M9 13.5L8 21l4-2 4 2-1-7.5"/>';ICONS.bell='<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>';ICONS.msg='<path d="M4 5h16v11H9l-5 4z"/>';
+$('bell').insertAdjacentHTML('afterbegin',ic('bell'));
+const streak=()=>{let n=0,d=s.day;if(!s.days.includes(d))d--;while(s.days.includes(d)){n++;d--}return n};
+const BADGES=[{id:'ru',t:'First round-up',ok:()=>s.tx.some(t=>t.spare>0)},{id:'inv',t:'First ₹100 invested',ok:()=>s.inv.length>0},{id:'rw',t:'Brand reward earned',ok:()=>s.tx.some(t=>t.type==='reward')},{id:'st',t:'3-day saving streak',ok:()=>streak()>=3}];
+function renderMore2(){
+  BADGES.forEach(b=>{if(!s.badges.includes(b.id)&&b.ok()){s.badges.push(b.id);s.notes.unshift({m:'Badge earned: '+b.t,ts:Date.now()});s.unread++}});
+  const n=streak();
+  $('wk-t').textContent='This week you spent '+inr(s.spent)+' and saved '+inr(s.spare+s.rewards)+' without noticing.';
+  $('wk-i').innerHTML=ic('flame');$('wk-s').textContent=n?n+'-day saving streak':'Save something today to start a streak';
+  $('badges').innerHTML=BADGES.map(b=>{const on=s.badges.includes(b.id);return`<div class="stat" style="opacity:${on?1:.45}"><span class="mi" style="margin-bottom:8px">${ic('award')}</span><p style="font-size:13px;font-weight:600">${b.t}</p><p class="muted small">${on?'Unlocked':'Locked'}</p></div>`}).join('');
+  $('nlist').innerHTML=s.notes.length?s.notes.map(x=>`<li><span class="mi">${ic('msg')}</span><div style="flex:1"><p style="font-size:14px">${esc(x.m)}</p><p class="muted small">${fmt(x.ts)}</p></div></li>`).join(''):'<li class="muted">No notifications yet.</li>';
+  $('bdot').style.display=s.unread?'block':'none';
+  $('capline').textContent='Round-ups this month: '+inr(s.spare)+' of '+inr(cfg.cap)+' cap'+(cfg.boost?' (2× booster on)':'');
+}
+$('boost').onclick=()=>{cfg.boost=!cfg.boost;mark();toast(cfg.boost?'Booster on: round-ups are doubled':'Booster off',1);render()};
+document.querySelectorAll('#capseg button').forEach(b=>b.onclick=()=>{cfg.cap=+b.dataset.c;mark();render()});
+$('locksw').onclick=()=>{cfg.lock=!cfg.lock;mark()};
+$('locknow').onclick=()=>{if(cfg.lock)$('lock').classList.remove('off');else toast('Turn on app lock first',1)};
+$('nextday').onclick=()=>{s.day++;toast('Moved to the next day',1);render()};
+let pin='';
+const pinUi=()=>document.querySelectorAll('#pdots i').forEach((d,i)=>d.classList.toggle('on',i<pin.length));
+$('keys').innerHTML=['1','2','3','4','5','6','7','8','9','','0','⌫'].map(k=>k?`<button data-k="${k}">${k}</button>`:'<span></span>').join('');
+function unlock(){pin='';pinUi();$('lock').classList.add('off');$('lk-m').textContent='Demo PIN: 1234'}
+$('keys').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;if(k==='⌫')pin=pin.slice(0,-1);else if(pin.length<4)pin+=k;pinUi();if(pin.length===4){if(pin==='1234'){await sleep(150);unlock()}else{$('lk-m').textContent='Wrong PIN. Try 1234.';$('pdots').classList.add('shake');await sleep(400);$('pdots').classList.remove('shake');pin='';pinUi()}}};
+$('fp').onclick=unlock;
+let DL=null;if(window.claude&&claude.use)claude.use('downloads').then(d=>{DL=d}).catch(()=>{});
+async function save(name,data){if(!DL){toast('Downloads aren’t available in this view',1);return}try{await DL.save({filename:name,data})}catch(e){if(!e||e.code!=='declined')toast('Couldn’t save the file',1)}}
+const csvq=v=>'"'+String(v).replace(/"/g,'""')+'"';
+function statement(){
+  const rows=[['Date','Type','Description','Amount (INR)']];
+  [...s.tx.map(t=>({id:t.id,ts:t.ts,t})),...s.inv.map(v=>({id:v.id,ts:v.ts,v}))].sort((a,b)=>a.id-b.id).forEach(e=>{const d=new Date(e.ts).toISOString();if(e.v)rows.push([d,'Invested',e.v.fund+' ('+e.v.units+' units)',e.v.amount]);else if(e.t.type==='reward')rows.push([d,'Reward',e.t.merchant,e.t.amount]);else{rows.push([d,'Spent',e.t.merchant,e.t.amount]);if(e.t.spare>0)rows.push([d,'Round-up saved',e.t.merchant,e.t.spare])}});
+  if(rows.length===1){toast('Nothing to download yet. Make a purchase first.',1);return}
+  save('rupeeround-statement.csv',rows.map(r=>r.map(csvq).join(',')).join('\n'));
+}
+$('dl').onclick=statement;
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+function openShare(){
+  const inv=s.invested>0,big=inr(inv?s.invested:s.spare+s.rewards);
+  const c=document.createElement('canvas');c.width=1080;c.height=1350;const x=c.getContext('2d');
+  x.fillStyle='#F7F8F6';x.fillRect(0,0,1080,1350);x.fillStyle='#14705A';x.fillRect(0,0,1080,16);
+  x.fillStyle='#1B2420';rr(x,90,100,110,110,32);x.fill();x.fillStyle='#F7F8F6';x.font='700 64px sans-serif';x.textAlign='center';x.fillText('₹',145,175);
+  x.textAlign='left';x.fillStyle='#1B2420';x.font='600 48px sans-serif';x.fillText('RupeeRound',230,172);
+  x.fillStyle='#7A857F';x.font='500 64px sans-serif';x.fillText(inv?'I invested':'I saved',90,520);
+  x.fillStyle='#14705A';x.font='700 220px sans-serif';x.fillText(big,80,740);
+  x.fillStyle='#1B2420';x.font='600 76px sans-serif';x.fillText('just by shopping.',90,860);
+  x.fillStyle='#7A857F';x.font='500 44px sans-serif';x.fillText('Spend as usual. RupeeRound invests',90,1040);x.fillText('the spare change in an index fund.',90,1100);
+  x.fillStyle='#14705A';rr(x,90,1180,380,92,46);x.fill();x.fillStyle='#fff';x.font='600 40px sans-serif';x.fillText('Try RupeeRound',135,1240);
+  $('sheet').innerHTML=`<h2>Share your progress</h2><img alt="Share card preview" src="${c.toDataURL('image/png')}" style="width:58%;align-self:center;border-radius:14px;border:1px solid var(--line)"><button class="btn wide" id="simg">Save image</button><button class="wide" id="sclose">Close</button>`;
+  $('ov').classList.add('on');$('simg').onclick=()=>c.toBlob(b=>save('rupeeround-share.png',b),'image/png');$('sclose').onclick=closeSheet;
+}
+mark();
+render();
+</script>
+</body>
+</html>
