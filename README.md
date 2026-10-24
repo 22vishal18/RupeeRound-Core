@@ -19,7 +19,7 @@ RupeeRound intercepts daily spending and turns consumption into long-term compou
 
 ### 📱 Product UI
 Product UI Demo : 
-https://22vishal18.github.io/RupeeRound-Core/RuppeeRoundUIdemo.html
+https://github.com/22vishal18/RupeeRound-Core/blob/main/RuppeeRoundUIdemo.html
 
 ## ⚙️ Technical Architecture (How it Works safely)
 To ensure optimal unit economics (avoiding ₹12 gateway fees on ₹4 investments) and regulatory compliance (no illegal fractional shares), we built a 4-step pipeline:
