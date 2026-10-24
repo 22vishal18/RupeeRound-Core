@@ -43,7 +43,7 @@ graph TD
 
 ## 🤖 The AI SMS Parser (Code Proof)
 Instead of brittle Regex, our backend uses a Generative AI parser to understand unstructured bank transaction texts. 
-*(See `ai_parser.py` in this repository for the live execution script).*
+*(See https://github.com/22vishal18/RupeeRound-Core/blob/main/ai_parser.py in this repository for the live execution script).*
 
 ## 🤝 Hacktoberfest Contributions
 We are open-sourcing our core SMS-Parsing engine. We are actively seeking community contributions to build out parsers for regional Indian banks (SBI, PNB, ICICI). Please check our **Issues** tab for `good first issue` tags!
